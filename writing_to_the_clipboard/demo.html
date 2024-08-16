@@ -1,0 +1,37 @@
+<html>
+<head>
+</head>
+
+<body>
+
+<div class="photos">
+	<img src="house.jpg">
+	<!--
+	<img src="house.png">
+	-->
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', init, false);
+async function init() {
+
+	document.querySelector('img').addEventListener('click', copyImagetoCB);
+
+}
+
+async function copyImagetoCB(e) {
+	console.log('click');
+	let type = 'image/jpeg';
+	let dataReq = await fetch(e.target.src);
+	let data = await dataReq.blob();
+
+	let blob = new Blob([data], { type });
+
+	let cbData = [new ClipboardItem({ [type]: blob })];
+	await navigator.clipboard.write(cbData);
+
+	console.log('done');
+}
+</script>
+</body>
+</html>
