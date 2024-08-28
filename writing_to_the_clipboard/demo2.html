@@ -1,0 +1,72 @@
+<html>
+<head>
+</head>
+
+<body>
+
+<div class="photos">
+	<p>
+	JPG:<br/>
+	<img src="house.jpg">
+	</p>
+	<p>
+	PNG:<br/>
+	<img src="house.png">
+	</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', init, false);
+
+async function init() {
+	let imgs = document.querySelectorAll('div.photos img');
+	imgs.forEach(i => {
+		i.addEventListener('click', copyImagetoCB);
+	});
+}
+
+async function copyImagetoCB(e) {
+
+	let type = e.target.src.split('.').pop();
+	let blob;
+	console.log('type', type);
+
+	// support JPG/PNG only
+	if(type === 'jpg' || type === 'jpeg') {
+	
+		blob = await setCanvasImage(e.target.src);
+
+	} else if(type.endsWith('png')) {
+		let dataReq = await fetch(e.target.src);
+		let data = await dataReq.blob();
+
+		blob = new Blob([data], { type:'image/png' });
+	}
+
+	let cbData = [new ClipboardItem({ 'image/png': blob })];
+	await navigator.clipboard.write(cbData);
+	console.log('Done');
+
+}
+
+async function setCanvasImage(path) {
+
+	return new Promise((resolve, reject) => {
+		const img = new Image;
+		const c = document.createElement('canvas');
+		const ctx = c.getContext('2d');
+
+		img.onload = function() {
+			c.width = this.naturalWidth
+			c.height = this.naturalHeight
+			ctx.drawImage(this,0,0)
+			c.toBlob(blob=>{
+				resolve(blob)
+			},'image/png')
+		}
+		img.src = path;
+	});
+}
+</script>
+</body>
+</html>

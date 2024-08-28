@@ -13,15 +13,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', init, false);
+
 async function init() {
-
 	document.querySelector('img').addEventListener('click', copyImagetoCB);
-
 }
 
 async function copyImagetoCB(e) {
-	console.log('click');
-	let type = 'image/jpeg';
+	// should be dynamic
+	let type = 'image/png';
 	let dataReq = await fetch(e.target.src);
 	let data = await dataReq.blob();
 
@@ -30,7 +29,7 @@ async function copyImagetoCB(e) {
 	let cbData = [new ClipboardItem({ [type]: blob })];
 	await navigator.clipboard.write(cbData);
 
-	console.log('done');
+	console.log('Done');
 }
 </script>
 </body>
