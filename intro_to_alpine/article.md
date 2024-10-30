@@ -143,11 +143,95 @@ Note the use of "variable in array" syntax. You can use whatever you want here, 
 </p>
 <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
 
-2 way binding
+## Two-Way Binding
 
-events
-getters
+How about binding form fields to your data? Once again, Alpine provides a directive, `x-model`. This works on any form field *except* file inputs (although, like in Vue, there's a workaround). 
+
+For example:
+
+```html
+<label for="firstName">First Name:</label> <input id="firstName" x-model="firstName"><br/>
+<label for="lastName">Last Name:</label> <input id="lastName" x-model="lastName"><br/>
+<label for="cool">Cool?</label> 
+<select id="cool" x-model="cool">
+	<option>true</option>
+	<option>false</option>
+</select>
+```
+
+The embed below demonstrates this, along with conditionally showing content based on the dropdown:
+
+<p class="codepen" data-height="300" data-theme-id="42685" data-default-tab="result" data-slug-hash="MWNGabj" data-pen-title="Alpine Article 3" data-editable="true" data-user="cfjedimaster" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/MWNGabj">
+  Alpine Article 4</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+## Binding Attributes 
+
+Closely related to two-way binding of form fields is the simpler act of binding an HTML attribute to your data. Alpine, again, provides a directive for this, `x-bind`, as well a shortcut. 
+
+Given your data has a value for `catPic`, we can bind it like so:
+
+```html
+<img x-bind:src="catPic">
+```
+
+Because this is something folks may use quite a bit, Alpine provides a shortcut:
+
+```html
+<img :src="catPic2">
+```
+
+I feel like a live embed of this would be gratuitous given how simple this is, but as it's pictures of cats, sorry, you're getting an embed:
+
+<p class="codepen" data-height="300" data-theme-id="42685" data-default-tab="result" data-slug-hash="bGXMVad" data-pen-title="Alpine Article 4" data-editable="true" data-user="cfjedimaster" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/bGXMVad">
+  Alpine Article 4</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+## Events 
+
+As you can probably guess by now, events are supported by a directive, this time the `x-on` directive where you specify the event and the handler to call. As with attribute bindings, there's a shortcut. Here's a simple example:
+
+
+```html
+<div x-data="{
+	 catPic:'https://placecats.com/400/400',
+	 flipImage() {
+			if(this.catPic.includes('/g')) this.catPic = this.catPic.replace('/g', '');
+			else this.catPic = this.catPic.replace('/400', '/g/400');
+	 }						 
+}">
+	<img :src="catPic" x-on:click="flipImage">
+</div>
+```
+
+I've defined a click handler on the image that runs a method, `flipImage`. If you look up in the `x-data` block, you can see I've defined the function there. In Alpine, your data can consist of various variables *and* methods interchangeably. Also note that `flipImage` uses the `this` scope to refer to the variable, `catPic`. All in all, this simply flips out a static picture of a cat 
+with a grayscale version. 
+
+The shorthand removes `x-on:` and simply uses `@`:
+
+```html
+<img :src="catPic" @click="flipImage">
+```
+
+You can play wit this below:
+
+<p class="codepen" data-height="300" data-theme-id="42685" data-default-tab="result" data-slug-hash="mdNLVaR" data-pen-title="Alpine Article 6" data-editable="true" data-user="cfjedimaster" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/mdNLVaR">
+  Alpine Article 6</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+Alpine also supports various modifies for event handling including the ability to run events once, prevent default behavior, throttle, and more. Check the [modifiers](https://alpinejs.dev/directives/on#modifiers) docs for more examples.
+
+
+getters?
 switch to JS only
-
 when NOT to use it
 
