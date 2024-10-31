@@ -4,7 +4,7 @@ Back in the old days, when I was building web sites by hand, in the snow, uphill
 
 I think part of the reason jQuery was so successful is that, along with patching over browser incompatibilities (looking at you <strike>Safari</strike>Internet Explorer), it was a laser focused set of utilities for common things developers needed to do - mainly:
 
-* Making network requests (without the pain of XMLHtttpRequest)
+* Making network requests (without the pain of XMLHttpRequest)
 * Listening for changes in the DOM
 * And making changes in the DOM
 
@@ -120,7 +120,7 @@ Finally, what about looping? Alpine provides the `x-for` directive. Like `x-if`,
 	name:'Raymond',
 	age:51,
 	cool:false,
-	hobbies:['buillding cat demos','star wars','cats']
+	hobbies:['building cat demos','star wars','cats']
 }">
 	<p>
 		My name is <span x-text="name"></span>. 
@@ -230,8 +230,70 @@ You can play wit this below:
 
 Alpine also supports various modifies for event handling including the ability to run events once, prevent default behavior, throttle, and more. Check the [modifiers](https://alpinejs.dev/directives/on#modifiers) docs for more examples.
 
+## Let's Discuss the Smell...
 
-getters?
-switch to JS only
-when NOT to use it
+I can still remember the first presentation I sat in discussing Alpine. I remember thinking - this looks really simple and practical... but there's no way in heck I'm going to write a bunch of JavaScript code all inside an HTML attribute to a div tag. Surely I thought, *surely*, the library's not going to require me to do that? 
 
+![Don't call me Shirley](./surely.jpg)
+
+Of course there is! To begin, you switch the `x-data` directive from a block of variables and code to simply a name. That name can be anything, but I usually go with `app`. If for some reason I had multiple unrelated Alpine blocks of code on one page I'd use something more descriptive, but `app` is good enough:
+
+```html
+<div x-data="app">
+	<img :src="catPic" @click="flipImage">
+</div>
+```
+
+In your JavaScript, you first listen for the `alpine:init` event. This is an event thrown when Alpine itself is loaded, before it tries to interact with the page:
+
+```js
+document.addEventListener("alpine:init", () => {
+	// stuff here...
+});
+```
+
+Then you can use `Alpine.data` to initialize your application. Here's the complete code block:
+
+```js
+document.addEventListener("alpine:init", () => {
+	Alpine.data("app", () => ({
+		catPic: "https://placecats.com/400/400",
+		flipImage() {
+			if (this.catPic.includes("/g")) this.catPic = this.catPic.replace("/g", "");
+			else this.catPic = this.catPic.replace("/400", "/g/400");
+		}
+	}));
+});
+```
+
+This is *much* cleaner and lets you keep your HTML and JavaScript separated as it should be. (IMO anyway!) You can see this version below:
+
+<p class="codepen" data-height="300" data-theme-id="42685" data-default-tab="result" data-slug-hash="qBeYqGX" data-pen-title="Alpine Article 7" data-editable="true" data-user="cfjedimaster" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/qBeYqGX">
+  Alpine Article 7</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+** Editorial Note ** You wil notice I'm including the Alpine script tag in the HTML instead of using CodePen's JavaScript settings. This is because the tag needs to be deferred which is not possible (afaik) with CodePen. 
+
+With our logic now separated in code, it becomes easier to add new features. For example, by adding an `init` function, Alpine will automatically run the method when the application is loaded. In the *incredibly* simple application below, the `init` method is used to request a Dad Joke immediately:
+
+<p class="codepen" data-height="300" data-theme-id="42685" data-default-tab="result" data-slug-hash="qBeYymp" data-pen-title="Alpine Article 7" data-editable="true" data-user="cfjedimaster" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/cfjedimaster/pen/qBeYymp">
+  Alpine Article 7</a> by Raymond Camden (<a href="https://codepen.io/cfjedimaster">@cfjedimaster</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+## When NOT to use Alpine 
+
+I just spent the last two thousand or so words explaining the basics of Alpine and raving about how much I love it so it would be crazy for me to tell you *not* to use it, right? Years ago, when I was much younger and foolish, I *always* reached for a JavaScript framework. First Angular, than Vue. Now that I'm much more mature and rarely make mistakes (ahem), my default is vanilla JavaScript, and by that I mean, no framework. If I just need a few lines of code, it would be silly to load anything I don't need, even Alpine. That being said, when I'm building something that is doing a lot of DOM manipulation, needs proper two-way binding, or just feels like, mentally, I need an "assistant", Alpine is what I go to first. 
+
+With that, let me leave you with not one, but two Alpine examples I'm particularly proud of. The first is [IdletFleet](https://idlefleet.netlify.app/), a simple "idle clicker" game where you work to build a space trading empire. Emphasis on the simple. 
+
+Next is [Cat Herder](https://catherder.netlify.app/), another "idle clicker" game but since it involves cats, you can't be quite as idle. 
+
+Both games have links to their respective repositories where you can dig into the code and how Alpine helped, but I encourage you to play both a bit before you peek behind the curtains. 
+
+Also be sure to [peruse](https://alpinejs.dev/) the Alpine docs as I didn't cover quite everything, but you can easily read the complete docs in less than an hour.
