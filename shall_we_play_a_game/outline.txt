@@ -1,0 +1,7 @@
+part1: managing the state of the game
+
+part2: abstracting out the settings
+	we build the 'timings' for the computer 
+
+part3: cheating i mean testing
+
