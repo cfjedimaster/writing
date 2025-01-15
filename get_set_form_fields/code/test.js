@@ -129,6 +129,7 @@ async function getFormDataJob(source, token, clientId) {
 	console.log('Got our access token.');
 
 	let sourceAsset = await getUploadData('application/pdf', accessToken, CLIENT_ID);
+
 	await uploadFile(sourceAsset.uploadUri, SOURCE_PDF, 'application/pdf');
 	console.log('Source PDF Uploaded.');
 
