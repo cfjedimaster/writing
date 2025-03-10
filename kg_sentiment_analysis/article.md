@@ -8,7 +8,9 @@ Before writing a line of code, I signed into Diffbot and opened up their visual 
 
 ![Screen shot of visual query builder, no options selected](./shot1.png)
 
-From this tool, I started off by selecting an entity type. This is the high level type of data I want to search and can be one of many numerous options, from people to events to movies and investments. I selected "Article" as my intent is to find news that's speaking ill of my wonderful product. I then selected a "Filter By" option. While you can filter by any property in the entity type, I used `text` as I didn't want to limit my results to items that mentioned by product by title. For the value, I selected "xbox". Lastly, I set the "Sort by" value to show newest first. I then hit search to see if my results made sense:
+From this tool, I started off by selecting an entity type. This is the high level type of data I want to search and can be one of many numerous options, from people to events to movies and investments. I selected "Article" as my intent is to find news that's speaking ill of my wonderful product. I then selected a "Filter By" option. While you can filter by any property in the entity type, I used `text` as I didn't want to limit my results to items that mentioned by product by title. For the value, I selected "Xbox". Initially I had used 'xbox', but by using the proper name of the product, it ensures results include Xbox as one of the main topics. 
+
+Lastly, I set the "Sort by" value to show newest first. I then hit search to see if my results made sense:
 
 ![Search results shown](./shot2.png)
 
@@ -20,9 +22,9 @@ Alright, so next, I want to filter to just negative results. Knowledge Graph Art
 
 ![Search results shown, now filtered to English with negative sentiment](./shot4.png)
 
-Woot, getting there. As a final step, I knew this was going to be automated and filtered to 'recent' items, so I added one more filter, this time on `date`, selected after, and picked a date from a week ago.
+Woot, getting there. As a final step, I knew this was going to be automated and filtered to 'recent' items, so I added one more filter, this time on `date`, selected `after`, and picked a date from a week ago.
 
-![Search results shown, now filtered to English with negative sentiment, and with a date filter](./shot7.png)
+![Search results shown, now filtered to English with negative sentiment, and with a date filter](./shot5.png)
 
 At this point, the query looks good, so let's copy out the query value provided by the tool:
 
@@ -42,7 +44,7 @@ import urllib.parse
 
 token = os.environ.get("db_token")
 
-query = 'type:Article text:"xbox" language:"en" sentiment<=0 date>"2025-03-03" sortBy:date'
+query = 'type:Article text:"Xbox" language:"en" sentiment<=0 date>"2025-03-03" sortBy:date'
 
 apiCall = f"https://kg.diffbot.com/kg/v3/dql?type=query&token={token}&query={urllib.parse.quote(query)}&size=25"
 
@@ -120,7 +122,7 @@ fLastWeek = lastWeek.strftime("%Y-%m-%d")
 And the last bit was to just include that date in my query:
 
 ```python
-query = f'type:Article text:"xbox" language:"en" sentiment<=0 date>{fLastWeek} sortBy:date'
+query = f'type:Article text:"Xbox" language:"en" sentiment<=0 date>{fLastWeek} sortBy:date'
 ```
 
 You can see the complete source code for the initial version [here](https://github.com/cfjedimaster/writing/blob/main/kg_sentiment_analysis/test1.py) and the final version [here](https://github.com/cfjedimaster/writing/blob/main/kg_sentiment_analysis/test2.py).
@@ -150,7 +152,7 @@ def handler(pd: "pipedream"):
   lastWeek = today + timedelta(days=-7)
   fLastWeek = lastWeek.strftime("%Y-%m-%d")
 
-  query = f'type:Article text:"xbox" language:"en" sentiment<=0 date>{fLastWeek} sortBy:date'
+  query = f'type:Article text:"Xbox" language:"en" sentiment<=0 date>{fLastWeek} sortBy:date'
   
   apiCall = f"https://kg.diffbot.com/kg/v3/dql?type=query&token={token}&query={urllib.parse.quote(query)}&size=25"
   

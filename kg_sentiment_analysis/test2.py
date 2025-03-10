@@ -11,7 +11,7 @@ today = datetime.now()
 lastWeek = today + timedelta(days=-7)
 fLastWeek = lastWeek.strftime("%Y-%m-%d")
 
-query = f'type:Article text:"xbox" language:"en" sentiment<=0 date>{fLastWeek} sortBy:date'
+query = f'type:Article text:"Xbox" language:"en" sentiment<=0 date>{fLastWeek} sortBy:date'
 
 apiCall = f"https://kg.diffbot.com/kg/v3/dql?type=query&token={token}&query={urllib.parse.quote(query)}&size=25"
 
