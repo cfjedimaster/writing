@@ -31,3 +31,4 @@ for result in results["data"]:
 	print(result["entity"]["sentiment"])
 
 	print("------------------------------------")
+
