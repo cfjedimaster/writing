@@ -5,7 +5,7 @@ import urllib.parse
 
 token = os.environ.get("db_token")
 
-query = 'type:Article text:"Xbox" language:"en" sentiment<=0 date>"2025-03-03" sortBy:date'
+query = 'type:Article tags.label:"Xbox" language:"en" sentiment<=0 date>"2025-03-03" sortBy:date'
 
 apiCall = f"https://kg.diffbot.com/kg/v3/dql?type=query&token={token}&query={urllib.parse.quote(query)}&size=25"
 
