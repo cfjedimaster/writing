@@ -81,3 +81,129 @@ In my Webflow site, I've got a set of product reviews that have been created by 
 On my site, I created a page and added a `Collection List` component tied to my reviews, sorted by the date when the review was created. I did a bit of design work in the `Collection Item` block to nicely render each review with a blue border to the right. You can see this for yourself here, <https://chrome-ai-test.webflow.io/review-demo-page>, but here's a screenshot:
 
 ![Screenshot](./shot1.png)
+
+Right now, this page is just fine. It works! But how can we use on-device AI to improve it? 
+
+Taking a look at each review, we can use JavaScript to get access to the text of the review itself. Each of these reviews can then be checked for sentiment. After that, we can then highlight in some way the positive versus negative results. The important thing to remember is that this is an *additional* feature of the page, an enhancement, for those people who can actually use it. 
+
+Alright, let's get to it. In the Webflow Desiger, I went into my page settings and used the `Custom Code` feature, specifically code to be placed before the `</body>` tag. Let's start with a bit of setup code:
+
+```js
+async function canDoIt() {
+	if(!window.LanguageModel) return false;
+	return (await LanguageModel.availability()) !== 'unavailable';
+}
+
+document.addEventListener('DOMContentLoaded', init, false);
+
+async function init() {
+		
+	let canWe = await canDoIt();
+	if(!canWe) {
+		return;
+	}
+
+	console.log('This browser can do AI stuff.');
+
+  let reviewList = document.querySelector('#reviewList');
+  let btnHTML = `
+  <p>
+  <button onclick="doReviews()">Use AI to Categorize Reviews</button>
+  </p>
+  `;
+  reviewList.insertAdjacentHTML('beforebegin',btnHTML);
+}
+```
+
+From the top, I'm using my `DOMContentLoaded` handler to run code when the page is loaded, the first of which is a call to utility function, `canDoIt()` (admittedly not the best name) that does the base feature detection followed by a call to `availability` on the `LanguageModel` object. In this case we're enhancing the page, so there's no need to let the user know anything went wrong. Life is perfect. Carry on. 
+
+If the AI model is supported, we need to add some form of user interaction in order to kick things off. *Technically* this is only really required when the status is in `downloading` or `downloadable`, so you could skip this if you wish. My solution was simple - add a button with a `click` event that will fire off the AI specific work and insert it before the reviews. You can see that below:
+
+![Screenshot](./shot2.png)
+
+Alright, now comes the complex part. Generally our process will break down to:
+
+* Get all the reviews which is simple DOM API calls.
+* For each set of review text, do setiment analysis.
+* Based on the result, apply a CSS style that represents positive or negative. Items in the middle won't be touched and will keep their blue style. 
+
+Let's look at that. First, `doReviews`:
+
+```js
+async function doReviews() {
+	let session = await LanguageModel.create({
+		initialPrompts: [
+			{role:'system', content:'You rate the sentiment value of text, giving it a score from 0 to 1 with 0 being the most negative, and 1 being the most positive.'}
+		]
+	});
+	
+  let reviews = document.querySelectorAll('div.review');
+
+	console.log('Kicking off review analyzing.');
+  
+  // each review element is the wrapper dom
+  
+	for(let i=0; i<reviews.length; i++) {
+  	let reviewText = reviews[i].querySelector('p').innerText;
+    console.log('reviewText', reviewText);
+		let result = await session.prompt([
+			{
+				role:"user",
+				content: [ { type: "text", value:reviewText } ]
+			}], { responseConstraint: schema });
+		
+		/*
+			logic for display is:
+			if result is <= 0.2, negative
+			if result >= 0.7, positive
+		*/
+
+		if(result <= 0.2) {
+			console.log('negative');
+			reviews[i].classList.add('review-negative');
+		} else if(result >= 0.7) {
+			console.log('positive');
+			reviews[i].classList.add('review-positive');
+		} else console.log('neutral');
+	
+	}
+}
+```
+
+We begin by creating a session with our model and using a common feature to GenAI, a system prompt. This helps direct the output from the system to match our needs, a numeric value representing sentiment. We're going to take another step to help with this in a bit.
+
+Next, the reviews are fetched via `querySelectorAll` and for each one, the code starts off grabbing the text in the first paragraph. Then a call to the `prompt` method on our session object is run with the value of that review. Note the `responseConstraint` portion. This is an example of [structured output](https://developer.chrome.com/docs/ai/structured-output-for-prompt-api), where our code specifies the *exact* response it should get from the API. This is done via JSON Schema and was defined earlier in our code:
+
+```js
+const schema = {
+	title:"Sentiment",
+	description:"A rating of the sentiment (bad versus good) of input text.",
+	type:"number", 	
+	minimum:0,
+	maximum:1
+};
+```
+
+JSON Schema can help define incredibly complex data structures, but for this demo we just need to ensure the result falls into a range of 0 to 1. The final part handles the "what is negative" and "what is positive" value, which to be honest is something that you may want to think carefully about. A lot will depend on the nature of your product, reviews, audience, and so forth. In this case, one of two CSS styles were applied. I also added this in my page settings:
+
+```html
+<style>
+.review-positive {
+  border-left: 4px solid #00FF00; 
+}
+
+.review-negative {
+  border-left: 4px solid #FF0000; 
+}
+</style>
+```
+
+The net result - the user (in a Chrome browser for now) hits the site, and once AI support is detected, the button is added on top. If they click, and after the model is downloaded (which again is a one time operation for all sites), the reviews will be checked and color coded accordingly. If you are on the latest Chrome and have enabled the proper flag, you can see this for yourself here: <https://chrome-ai-test.webflow.io/review-demo-page>. Of course, even if you aren't on Chrome you can hit that URL and nothing bad will happen. 
+
+Here's a screen shot of it in action:
+
+![Screenshot](./shot3.png)
+
+## Next Steps
+
+If it isn't obvious from the multiple warnings above, this new feature is still somewhat bleeding edge. That being said, I truly think the ability to do generative AI completely on device, for free, is going to be mind blowing, especially in cases where it can progressively enhance the experience for your web site. If you want to learn more, spend some time in the [docs](https://developer.chrome.com/docs/ai/get-started) and check out the other APIs as well. 
